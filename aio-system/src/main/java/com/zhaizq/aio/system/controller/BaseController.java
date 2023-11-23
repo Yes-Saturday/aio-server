@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
+import java.util.Collection;
 
-public class BaseController {
+public abstract class BaseController {
     @Autowired
     private HttpServletRequest request;
     @Autowired
@@ -22,14 +22,8 @@ public class BaseController {
         return new Result<>(200, data, null);
     }
 
-    @Getter
-    public static class Results<T> extends Result<List<T>> {
-        private final long total;
-
-        public Results(int code, List<T> data, long total, String msg) {
-            super(code, data, msg);
-            this.total = total;
-        }
+    protected <T> Results<T> success(Collection<T> data, long total) {
+        return new Results<>(200, data, total,null);
     }
 
     @Getter
@@ -38,5 +32,15 @@ public class BaseController {
         private final int code;
         private final T data;
         private final String msg;
+    }
+
+    @Getter
+    public static class Results<T> extends Result<Collection<T>> {
+        private final long total;
+
+        public Results(int code, Collection<T> data, long total, String msg) {
+            super(code, data, msg);
+            this.total = total;
+        }
     }
 }

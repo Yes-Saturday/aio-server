@@ -24,17 +24,15 @@ public class UncheckController extends BaseController {
     @Autowired
     private SystemUserService systemUserService;
 
-    @JsonParam
     @RequestMapping("/publicKey")
-    public Object publicKey(String username) {
+    public Result<String> publicKey(@JsonParam String username) {
         RsaUtil.Keys<String> keys = RsaUtil.genKeyPairString();
         CacheMap.DEFAULT.put("SYSTEM_LOGIN:KEY-" + username, keys, Duration.ofSeconds(30).toMillis());
         return success(keys.getPublicKey());
     }
 
-    @JsonParam
     @RequestMapping("/login")
-    public Object login(String username, String password) {
+    public Result<?> login(@JsonParam String username, @JsonParam String password) {
         Integer times = (Integer) CacheMap.DEFAULT.getOrDefault("SYSTEM_LOGIN:LOCK-" + username, 1);
         if (++times > 5) throw new BusinessException("账户已被锁定10分钟");
         CacheMap.DEFAULT.put("SYSTEM_LOGIN:LOCK-" + username, times, Duration.ofMinutes(10).toMillis());
@@ -52,10 +50,16 @@ public class UncheckController extends BaseController {
 
         CacheMap.DEFAULT.remove("SYSTEM_LOGIN:LOCK-" + username);
         String token = StringUtil.uuid(); // TODO login
+        String secret = StringUtil.uuid();
 
         Map<String, String> data = new HashMap<>();
         data.put("token", token);
-        data.put("secret", StringUtil.uuid());
+        data.put("secret", secret);
         return success(data);
+    }
+
+    @RequestMapping("/logout")
+    public Object logout() {
+        return success();
     }
 }
