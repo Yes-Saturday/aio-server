@@ -1,6 +1,8 @@
 package com.zhaizq.aio.config;
 
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.zhaizq.aio.interceptor.LoginInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -30,9 +32,12 @@ public class WebConfig implements WebMvcConfigurer {
 //        registry.addMapping("/**").maxAge(3600).allowedOrigins("*");
     }
 
+    @Autowired
+    private LoginInterceptor loginInterceptor;
+
     // Spring 拦截器
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
-//        registry.addInterceptor(appLoginInterceptor).addPathPatterns("/app/**");
+        registry.addInterceptor(loginInterceptor).addPathPatterns("/**");
     }
 
     // Spring 参数转换器

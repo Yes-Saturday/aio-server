@@ -53,14 +53,15 @@ public class JsonParamResolver implements HandlerMethodArgumentResolver {
     }
 
     public static String parseRequestData(HttpServletRequest request) throws IOException {
-        if (request.getContentType().contains(MediaType.APPLICATION_JSON_VALUE)) {
+        String contentType = request.getContentType() != null ? request.getContentType() : "";
+        if (contentType.contains(MediaType.APPLICATION_JSON_VALUE)) {
             return StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
-        } else if (request.getContentType().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                || request.getContentType().contains(MediaType.MULTIPART_FORM_DATA_VALUE)) {
+        } else if (contentType.contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                || contentType.contains(MediaType.MULTIPART_FORM_DATA_VALUE)) {
             return request.getParameter("strData");
-        } else {
-            log.warn("request content-type[{}] is not supported", request.getContentType());
-            return null;
         }
+
+        log.warn("request content-type[{}] is not supported", request.getContentType());
+        return null;
     }
 }

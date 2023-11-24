@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 @TableName("system_user")
 public class SystemUser {
@@ -17,4 +19,11 @@ public class SystemUser {
     private String password;
     @TableField("salt")
     private String salt;
+    @TableField("create_time")
+    private Date createTime;
+
+    @TableField(exist = false)
+    private String token;
+    @TableField(exist = false)
+    private String secret;
 }

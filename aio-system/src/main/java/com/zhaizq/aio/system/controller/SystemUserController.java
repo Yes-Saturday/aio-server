@@ -8,29 +8,37 @@ import com.zhaizq.aio.common.utils.DigestUtil;
 import com.zhaizq.aio.common.utils.RsaUtil;
 import com.zhaizq.aio.common.utils.StringUtil;
 import com.zhaizq.aio.system.mapper.entity.SystemUser;
+import com.zhaizq.aio.system.service.SystemLoginService;
 import com.zhaizq.aio.system.service.SystemUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
 
-@Uncheck
 @RestController
-@RequestMapping("/system/uncheck")
-public class UncheckController extends BaseController {
+@RequestMapping("/system/user")
+public class SystemUserController extends BaseController {
     @Autowired
     private SystemUserService systemUserService;
+    @Autowired
+    private SystemLoginService systemLoginService;
 
-    @RequestMapping("/publicKey")
-    public Result<String> publicKey(@JsonParam String username) {
+    @RequestMapping("/info")
+    public Result<?> info() {
+        SystemUser loginUser = systemLoginService.getLoginUser();
+        return success(loginUser);
+    }
+
+    @Uncheck
+    @RequestMapping("/loginKey")
+    public Result<String> loginKey(@JsonParam String username) {
         RsaUtil.Keys<String> keys = RsaUtil.genKeyPairString();
         CacheMap.DEFAULT.put("SYSTEM_LOGIN:KEY-" + username, keys, Duration.ofSeconds(30).toMillis());
         return success(keys.getPublicKey());
     }
 
+    @Uncheck
     @RequestMapping("/login")
     public Result<?> login(@JsonParam String username, @JsonParam String password) {
         Integer times = (Integer) CacheMap.DEFAULT.getOrDefault("SYSTEM_LOGIN:LOCK-" + username, 1);
@@ -44,22 +52,18 @@ public class UncheckController extends BaseController {
         if (user == null) throw new BusinessException("用户名或密码错误");
 
         password = RsaUtil.decryptByPrivateKey(password, keys.getPrivateKey());
-        password = DigestUtil.sha256AsHex(password + user.getSalt());
-        if (!StringUtil.equals(user.getPassword(), password))
+        if (!StringUtil.equals(user.getPassword(), DigestUtil.sha256AsHex(password + user.getSalt())))
             throw new BusinessException("用户名或密码错误");
 
         CacheMap.DEFAULT.remove("SYSTEM_LOGIN:LOCK-" + username);
-        String token = StringUtil.uuid(); // TODO login
-        String secret = StringUtil.uuid();
-
-        Map<String, String> data = new HashMap<>();
-        data.put("token", token);
-        data.put("secret", secret);
-        return success(data);
+        SystemUser login = systemLoginService.login(user.getId());
+        return success(login);
     }
 
+    @Uncheck
     @RequestMapping("/logout")
     public Object logout() {
+        systemLoginService.logout();
         return success();
     }
 }

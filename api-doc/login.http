@@ -1,0 +1,26 @@
+@baseUrl = http://127.0.0.1:8888
+
+### 登录信息
+POST {{baseUrl}}/system/user/info
+Content-Type: application/json
+
+### 登录密钥
+POST {{baseUrl}}/system/user/loginKey
+Content-Type: application/json
+
+{
+    "username": "zhaizq"
+}
+
+### 登录
+POST {{baseUrl}}/system/user/login
+Content-Type: application/json
+
+{
+    "username": "zhaizq",
+    "password": "12345"
+}
+
+### 登出
+POST {{baseUrl}}/system/user/logout
+Content-Type: application/json

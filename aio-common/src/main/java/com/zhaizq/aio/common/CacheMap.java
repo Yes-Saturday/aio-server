@@ -1,12 +1,10 @@
 package com.zhaizq.aio.common;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import java.lang.ref.WeakReference;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -30,8 +28,8 @@ public class CacheMap<K, V> {
         references.add(new WeakReference<>(this));
     }
 
-    public void put(K k, V v, long expire) {
-        cacheMap.put(k, new Cache<>(v, System.currentTimeMillis() + expire));
+    public Cache<V> getCache(K k) {
+        return cacheMap.get(k);
     }
 
     public V getOrDefault(K k, V v) {
@@ -54,19 +52,28 @@ public class CacheMap<K, V> {
         return null;
     }
 
+    public V put(K k, V v, long expire) {
+        Cache<V> cache = cacheMap.put(k, new Cache<>(v, System.currentTimeMillis() + expire));
+        return cache != null ? cache.getValue() : null;
+    }
+
     public V remove(K k) {
         Cache<V> cache = cacheMap.remove(k);
         return cache != null ? cache.value : null;
     }
 
-    private void cleanup() {
+    public Map<K, Cache<V>> getCacheMap() {
+        return Collections.unmodifiableMap(cacheMap);
+    }
+
+    public void cleanup() {
         long limit = System.currentTimeMillis();
         cacheMap.entrySet().stream().filter(v -> v.getValue().expire < limit).forEach(v -> {
             cacheMap.computeIfPresent(v.getKey(), (key, cache) -> cache.expire < limit ? null : cache);
         });
     }
 
-    private static void cleanup0() {
+    public static void cleanup0() {
         Iterator<WeakReference<CacheMap<?, ?>>> iterator = references.iterator();
         while (iterator.hasNext()) {
             CacheMap<?, ?> cacheMap = iterator.next().get();
@@ -79,8 +86,9 @@ public class CacheMap<K, V> {
         }
     }
 
+    @Getter
     @AllArgsConstructor
-    private static class Cache<V> {
+    public static class Cache<V> {
         private final V value;
         private long expire;
     }
