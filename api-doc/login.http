@@ -24,3 +24,48 @@ Content-Type: application/json
 ### 登出
 POST {{baseUrl}}/system/user/logout
 Content-Type: application/json
+
+
+
+
+### 博客 - 编辑
+POST {{baseUrl}}/blog/save
+Content-Type: application/json
+
+{
+    "id": null,
+    "pid": 3,
+    "gid": 1,
+    "title": "node2.1",
+    "markdown": "markdown",
+    "html": "html",
+    "level": 5
+}
+
+### 博客 - 删除
+POST {{baseUrl}}/blog/del
+Content-Type: application/json
+
+{
+    "id": 7
+}
+
+### 博客 - 主题列表
+POST {{baseUrl}}/blog/subject
+Content-Type: application/json
+
+### 博客 - 分类树
+POST {{baseUrl}}/blog/tree
+Content-Type: application/json
+
+{
+    "gid": 1
+}
+
+### 博客 - 博客详情
+POST {{baseUrl}}/blog/info
+Content-Type: application/json
+
+{
+    "id": 7
+}
