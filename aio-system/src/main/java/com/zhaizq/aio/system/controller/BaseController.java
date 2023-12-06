@@ -1,5 +1,7 @@
 package com.zhaizq.aio.system.controller;
 
+import com.zhaizq.aio.system.mapper.entity.SystemUser;
+import com.zhaizq.aio.system.service.SystemLoginService;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,12 @@ public abstract class BaseController {
     private HttpServletRequest request;
     @Autowired
     private HttpServletResponse response;
+    @Autowired
+    private SystemLoginService loginService;
+
+    protected SystemUser getLogin() {
+        return loginService.getLoginUser();
+    }
 
     protected Result<Void> success() {
         return new Result<>(200, null, null);

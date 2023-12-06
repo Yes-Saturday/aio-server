@@ -13,6 +13,7 @@
         <module>aio-boot</module>
         <module>aio-system</module>
         <module>aio-common</module>
+        <module>aio-blog</module>
     </modules>
 
     <properties>

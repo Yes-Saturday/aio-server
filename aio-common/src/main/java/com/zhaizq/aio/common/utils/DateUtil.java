@@ -2,6 +2,7 @@ package com.zhaizq.aio.common.utils;
 
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -29,14 +30,14 @@ public class DateUtil {
         return calendar.getTime();
     }
 
-    public static Date addDays(Date date, int days) {
+    public static Date addDays(Date date, int offset) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        calendar.add(Calendar.DATE, days);
+        calendar.add(Calendar.DATE, offset);
         return calendar.getTime();
     }
 
-    public static Date addMonth(Date date, int offset) {
+    public static Date addMonths(Date date, int offset) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(Calendar.MONTH, offset);
@@ -59,6 +60,26 @@ public class DateUtil {
         LocalDate before = Instant.ofEpochMilli(beforeDate.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate after = Instant.ofEpochMilli(afterDate.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
         return after.toEpochDay() - before.toEpochDay();
+    }
+
+    public static int diffMonths(Date afterDate, Date beforeDate) {
+        LocalDate before = Instant.ofEpochMilli(beforeDate.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate after = Instant.ofEpochMilli(afterDate.getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+        return (after.getYear() - before.getYear()) * 12 + after.getMonthValue() - before.getMonthValue() - (after.getDayOfMonth() < before.getDayOfMonth() ? 1 : 0);
+    }
+
+    public static Date min(Date... dates) {
+        if (dates == null || dates.length == 0) return null;
+        if (dates.length == 1) return dates[0];
+
+        return Arrays.stream(dates).min(Date::compareTo).orElse(null);
+    }
+
+    public static Date max(Date... dates) {
+        if (dates == null || dates.length == 0) return null;
+        if (dates.length == 1) return dates[0];
+
+        return Arrays.stream(dates).max(Date::compareTo).orElse(null);
     }
 
     public static String format(String pattern) {

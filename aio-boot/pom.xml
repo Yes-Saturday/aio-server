@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>com.zhaizq.aio</groupId>
-            <artifactId>aio-system</artifactId>
+            <artifactId>aio-blog</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

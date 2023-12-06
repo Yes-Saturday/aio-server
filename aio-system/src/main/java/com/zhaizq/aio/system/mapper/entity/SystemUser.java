@@ -19,6 +19,8 @@ public class SystemUser {
     private String password;
     @TableField("salt")
     private String salt;
+    @TableField("level")
+    private int level;
     @TableField("create_time")
     private Date createTime;
 
