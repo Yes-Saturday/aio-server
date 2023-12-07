@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.FastjsonTypeHandler;
 import lombok.Data;
-import org.apache.ibatis.type.DateTypeHandler;
 
 import java.util.Date;
 
@@ -16,13 +15,17 @@ public class BlogInfo {
     @TableId(type = IdType.AUTO)
     private Integer id;
 
+    /** 祖ID */
+    @TableField("gid")
+    private Integer gid;
+
     /** 父ID */
     @TableField("pid")
     private Integer pid;
 
-    /** 祖ID */
-    @TableField("gid")
-    private Integer gid;
+    /** 排序 */
+    @TableField("`order`")
+    private Integer order;
 
     /** 标题 */
     @TableField("title")

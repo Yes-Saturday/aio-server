@@ -1,4 +1,4 @@
---drop table `system_user`;
+-- drop table `system_user`;
 CREATE TABLE system_user (
 	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	username TEXT,
@@ -8,7 +8,7 @@ CREATE TABLE system_user (
 	create_time TEXT
 );
 
---drop table `blog_info`;
+-- drop table `blog_info`;
 CREATE TABLE blog_info (
 	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	pid INTEGER,
@@ -18,17 +18,18 @@ CREATE TABLE blog_info (
 	html TEXT,
 	level INTEGER,
 	del INTEGER,
-	create_time TEXT,
+	create_uid INTEGER,
+	create_time INTEGER,
 	update_uid INTEGER,
-	update_time TEXT
+	update_time INTEGER
 );
 
---drop table `blog_history`;
+-- drop table `blog_history`;
 CREATE TABLE `blog_history` (
 	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	bid INTEGER,
 	title TEXT,
 	markdown TEXT,
 	create_uid INTEGER,
-	create_time datetime
+	create_time INTEGER
 );

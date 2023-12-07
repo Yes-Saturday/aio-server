@@ -12,7 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/blog")
@@ -20,7 +25,7 @@ public class BlogController extends BaseController {
     @Autowired
     private BlogService blogService;
 
-    @RequestMapping("/save")
+    @RequestMapping("/save/info")
     public Result<?> save(@JsonParam BlogInfo blog) {
         if (blog.getLevel() > getLogin().getLevel())
             throw new BusinessException("level is to high");
@@ -29,6 +34,37 @@ public class BlogController extends BaseController {
             throw new BusinessException("title is empty");
 
         blogService.save(blog, getLogin().getId());
+        return success();
+    }
+
+    @RequestMapping("/save/tree")
+    public Result<?> save(@JsonParam TreeHolder.LabelNode labelNode) {
+        int gid = (int) labelNode.getId();
+        blogService.checkLevel(gid, getLogin());
+
+        List<BlogInfo> blogs = new LinkedList<>();
+        Queue<TreeHolder.LabelNode> queue = new LinkedBlockingQueue<>(Collections.singletonList(labelNode));
+        while (queue.size() > 0) {
+            TreeHolder.LabelNode node = queue.poll();
+            if (node.getChildren() == null) continue;
+
+            for (int i = 0; i < node.getChildren().size(); i++) {
+                TreeHolder.LabelNode child = node.getChildren().get(i);
+                queue.add(child);
+
+                BlogInfo blogInfo = new BlogInfo();
+                blogInfo.setId((int) child.getId());
+                blogInfo.setPid((int) node.getId());
+                blogInfo.setOrder(i + 1);
+                blogs.add(blogInfo);
+            }
+        }
+
+        List<Integer> ids = blogs.stream().map(BlogInfo::getId).collect(Collectors.toList());
+        Integer count = blogService.lambdaQuery().in(BlogInfo::getId, ids).ne(BlogInfo::getGid, gid).count();
+        if (count > 0) throw new BusinessException("gid is error");
+
+        blogService.updateBatchById(blogs);
         return success();
     }
 
@@ -58,7 +94,9 @@ public class BlogController extends BaseController {
         if (gBlog.getLevel() > login.getLevel())
             throw new BusinessException("level is to high");
 
-        List<BlogInfo> list = blogService.lambdaQuery().eq(BlogInfo::getGid, gid).eq(BlogInfo::getDel, false).list();
+        List<BlogInfo> list = blogService.lambdaQuery().eq(BlogInfo::getGid, gid).eq(BlogInfo::getDel, false)
+                .orderByAsc(BlogInfo::getPid).orderByAsc(BlogInfo::getOrder).list();
+
         TreeHolder<BlogInfo> treeHolder = new TreeHolder<>(BlogInfo::getId, BlogInfo::getPid, list);
         List<TreeHolder.LabelNode> labels = treeHolder.labelTree(v -> v.getLevel() > login.getLevel() ? null : v.getTitle());
         return success(labels);
