@@ -24,9 +24,12 @@ public class SystemUserController extends BaseController {
     @Autowired
     private SystemLoginService systemLoginService;
 
+    @Uncheck(verify = false)
     @RequestMapping("/info")
     public Result<?> info() {
         SystemUser loginUser = systemLoginService.getLoginUser();
+        if (loginUser == null)
+            loginUser = systemLoginService.anonymous();
         return success(loginUser);
     }
 
@@ -38,6 +41,7 @@ public class SystemUserController extends BaseController {
         return success(keys.getPublicKey());
     }
 
+    @SuppressWarnings("unchecked")
     @Uncheck
     @RequestMapping("/login")
     public Result<?> login(@JsonParam String username, @JsonParam String password) {
@@ -60,7 +64,7 @@ public class SystemUserController extends BaseController {
         return success(login);
     }
 
-    @Uncheck
+    @Uncheck(verify = false)
     @RequestMapping("/logout")
     public Object logout() {
         systemLoginService.logout();

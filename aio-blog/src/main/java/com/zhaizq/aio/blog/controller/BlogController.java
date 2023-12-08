@@ -5,6 +5,7 @@ import com.zhaizq.aio.blog.service.BlogService;
 import com.zhaizq.aio.common.BusinessException;
 import com.zhaizq.aio.common.TreeHolder;
 import com.zhaizq.aio.common.annotation.JsonParam;
+import com.zhaizq.aio.common.annotation.Uncheck;
 import com.zhaizq.aio.common.utils.StringUtil;
 import com.zhaizq.aio.system.controller.BaseController;
 import com.zhaizq.aio.system.mapper.entity.SystemUser;
@@ -81,12 +82,14 @@ public class BlogController extends BaseController {
         return success();
     }
 
+    @Uncheck
     @RequestMapping("/subject")
     public Result<?> subject() {
         List<BlogInfo> data = blogService.lambdaQuery().isNull(BlogInfo::getPid).eq(BlogInfo::getDel, false).le(BlogInfo::getLevel, getLogin().getLevel()).list();
         return success(data);
     }
 
+    @Uncheck
     @RequestMapping("/tree")
     public Result<?> tree(@JsonParam Integer gid) {
         SystemUser login = getLogin();
@@ -102,6 +105,7 @@ public class BlogController extends BaseController {
         return success(labels);
     }
 
+    @Uncheck
     @RequestMapping("/info")
     public Result<?> info(@JsonParam Integer id) {
         BlogInfo blog = blogService.lambdaQuery().eq(BlogInfo::getId, id).eq(BlogInfo::getDel, false).one();

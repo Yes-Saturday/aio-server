@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.UUID;
 
 @Slf4j
@@ -51,11 +52,23 @@ public class SystemLoginService {
         return sysUser;
     }
 
+    public SystemUser anonymous() {
+        SystemUser sysUser = new SystemUser();
+        sysUser.setUsername("匿名用户" + StringUtil.random(6));
+        sysUser.setLevel(0);
+        sysUser.setCreateTime(new Date());
+        sysUser.setToken(this.getToken());
+        sysUser.setSecret(UUID.randomUUID().toString());
+
+        CacheMap.DEFAULT.put("APP_LOGIN:TOKEN-" + sysUser.getToken(), sysUser, Duration.ofDays(7).toMillis());
+        return sysUser;
+    }
+
     public void logout() {
         CacheMap.DEFAULT.remove("APP_LOGIN:TOKEN-" + this.getToken());
     }
 
-    private String getToken() {
+    public String getToken() {
         String token = (String) request.getAttribute(LOGIN_TOKEN_KEY);
         if (token != null) return token;
 

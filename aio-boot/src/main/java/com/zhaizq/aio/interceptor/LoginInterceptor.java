@@ -32,43 +32,30 @@ public class LoginInterceptor implements HandlerInterceptor {
             return true;
 
         HandlerMethod handlerMethod = (HandlerMethod) handler;
-        if (handlerMethod.getMethodAnnotation(Uncheck.class) != null || handlerMethod.getBeanType().getAnnotation(Uncheck.class) != null)
-            return true;
+        Uncheck uncheck = handlerMethod.getMethodAnnotation(Uncheck.class);
+        uncheck = uncheck != null ? uncheck : handlerMethod.getBeanType().getAnnotation(Uncheck.class);
 
-        if (true) {
-            SystemUser loginUser = systemLoginService.getLoginUser();
-            if (loginUser == null)
-                systemLoginService.login(1);
+        if (uncheck != null && !uncheck.verify())
             return true;
-        }
-
-        this.verify(request);
 
         SystemUser loginUser = systemLoginService.getLoginUser();
-        if (loginUser == null) throw new BusinessException(401, "未登录");
+        this.verify(loginUser, request);
 
-        this.signVerify(loginUser.getSecret(), request);
+        if (uncheck == null && loginUser.getId() == null)
+            throw new BusinessException(401, "未登录");
+
         return true;
     }
 
-    // 签名校验
-    private void signVerify(String secret, HttpServletRequest request) throws IOException {
-        String body = JsonParamResolver.parseRequestData(request);
-        String strData = secret + body + secret;
-        String mySign = DigestUtil.sha256AsHex(strData);
-
-        String sign = request.getHeader("X-Sign");
-        if (!Objects.equals(mySign, sign)) {
-            log.info("mySign: {}, theySign: {}", mySign, sign);
-            throw new BusinessException("签名校验失败");
-        }
-    }
-
     // 请求校验
-    private void verify(HttpServletRequest request) throws IOException {
+    private void verify(SystemUser loginUser, HttpServletRequest request) throws IOException {
         JSONObject jsonObject = JsonParamResolver.parseRequestJson(request);
         String uuid = jsonObject.getString("_uuid"); // 防重放
         long timestamp = jsonObject.getLongValue("_timestamp"); // 防过期
+        String token = jsonObject.getString("_token"); // 防伪装
+
+        if (!Objects.equals(token, loginUser.getToken()))
+            throw new BusinessException("令牌不合法");
 
         if (Math.abs(System.currentTimeMillis() - timestamp) > Duration.ofMinutes(5).toMillis())
             throw new BusinessException("过期的请求");
@@ -77,5 +64,16 @@ public class LoginInterceptor implements HandlerInterceptor {
         CacheMap.DEFAULT.put("APP_REQUEST:UNIQUE-" + uuid, Byte.BYTES, Duration.ofMinutes(10).toMillis());
         if (exists != null)
             throw new BusinessException("重复的请求");
+
+        // 签名校验
+        String body = JsonParamResolver.parseRequestData(request);
+        String strData = loginUser.getSecret() + body + loginUser.getSecret();
+        String mySign = DigestUtil.sha256AsHex(strData);
+
+        String sign = request.getHeader("X-Sign");
+        if (!Objects.equals(mySign, sign)) {
+            log.info("mySign: {}, theySign: {}", mySign, sign);
+            throw new BusinessException("签名校验失败");
+        }
     }
 }
