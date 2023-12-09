@@ -44,7 +44,7 @@ public class SystemFileService {
         entity = new SystemFile();
         entity.setFileUuid(StringUtil.uuid());
         entity.setFileName(fileName);
-        entity.setFilePath(String.format("/upload/%s/%s.%s", DateUtil.format("yyyyMMdd"), entity.getFileUuid(), entity.getSuffix()));
+        entity.setFilePath(String.format("/upload/%s/%s%s", DateUtil.format("yyyyMMdd"), entity.getFileUuid(), entity.getSuffix()));
         entity.setFileSize((long) bytes.length);
         entity.setFileMd5(fileMd5);
         entity.setCreateUid(operator);
